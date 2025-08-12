@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import GlobalAlert from '@/components/GlobalAlert.vue';
+import ModalManager from '@/components/ModalManager.vue';
 import AppLayout from '@/layouts/app/AppSidebarLayout.vue';
 import { useAlertStore, type AlertConfig } from '@/stores/alertStore';
 import type { BreadcrumbItemType } from '@/types';
@@ -43,5 +44,6 @@ withDefaults(defineProps<Props>(), {
     <AppLayout :breadcrumbs="breadcrumbs">
         <GlobalAlert />
         <slot />
+        <ModalManager />
     </AppLayout>
 </template>

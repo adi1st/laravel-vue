@@ -1,18 +1,16 @@
 <script setup lang="ts">
+import DeleteConfirmation from '@/components/DeleteConfirmation.vue';
 import HeadingSmall from '@/components/HeadingSmall.vue';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/AppLayout.vue';
+import { useModalStore } from '@/stores/modalStore';
+import type { Category } from '@/types';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head } from '@inertiajs/vue3';
 import { Plus } from 'lucide-vue-next';
-
-interface Category {
-    id: number;
-    name: string;
-    description: string;
-    image: string;
-}
+import CategoryDetails from './partials/CategoryDetails.vue';
+import CategoryForm from './partials/CategoryForm.vue';
 
 interface Props {
     categories: Category[];
@@ -28,10 +26,35 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-const handleDelete = (id: number) => {
-    if (confirm('Are you sure you want to delete this category?')) {
-        router.delete(route('categories.destroy', id));
-    }
+// modal configs
+const modalStore = useModalStore();
+
+//'Delete'
+const openDeleteModal = (category: Category) => {
+    modalStore.open(
+        DeleteConfirmation,
+        {
+            title: `Delete Category: ${category.name}`,
+            message: 'Are you sure you want to delete this category? This action cannot be undone.',
+            deleteUrl: route('categories.destroy', category.id),
+        },
+        { size: 'sm' },
+    );
+};
+
+//'Create'
+const openCreateModal = () => {
+    modalStore.open(CategoryForm, null, { size: 'md' });
+};
+
+//'Update'
+const openUpdateModal = (category: Category) => {
+    modalStore.open(CategoryForm, { category }, { size: 'lg' });
+};
+
+//'Read' (View)
+const openViewModal = (category: Category) => {
+    modalStore.open(CategoryDetails, { category }, { size: 'md' });
 };
 </script>
 
@@ -43,9 +66,10 @@ const handleDelete = (id: number) => {
             <div class="flex flex-col space-y-6">
                 <HeadingSmall title="Categories" description="Manage your categories" />
                 <div class="flex justify-end">
-                    <Link :href="route('categories.create')"
+                    <!-- <Link :href="route('categories.create')"
                         ><Button class="ml-auto"><Plus class="h-4 w-4" /> Add Category</Button></Link
-                    >
+                    > -->
+                    <Button class="ml-auto" @click="openCreateModal"><Plus class="h-4 w-4" /> Add Category</Button>
                 </div>
                 <Table>
                     <TableCaption>A list of your recent categories.</TableCaption>
@@ -65,8 +89,9 @@ const handleDelete = (id: number) => {
                             <TableCell class="font-medium">{{ category.name }}</TableCell>
                             <TableCell>{{ category.description ?? '' }}</TableCell>
                             <TableCell class="text-right">
-                                <Link :href="route('categories.edit', category.id)" class="mr-2"><Button variant="secondary">Edit</Button></Link>
-                                <Button variant="destructive" @click="handleDelete(category.id)">Delete</Button>
+                                <Button variant="ghost" @click="openViewModal(category)" class="mr-2">View</Button>
+                                <Button variant="outline" @click="openUpdateModal(category)" class="mr-2">Edit</Button>
+                                <Button variant="destructive" @click="openDeleteModal(category)" class="mr-2">Delete</Button>
                             </TableCell>
                         </TableRow>
                     </TableBody>
