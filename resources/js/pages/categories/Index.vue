@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import HeadingSmall from '@/components/HeadingSmall.vue';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link, usePage } from '@inertiajs/vue3';
-import { Bell } from 'lucide-vue-next';
+import { Head, Link, router } from '@inertiajs/vue3';
+import { Plus } from 'lucide-vue-next';
 
 interface Category {
     id: number;
@@ -29,7 +28,11 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-const page = usePage();
+const handleDelete = (id: number) => {
+    if (confirm('Are you sure you want to delete this category?')) {
+        router.delete(route('categories.destroy', id));
+    }
+};
 </script>
 
 <template>
@@ -38,15 +41,12 @@ const page = usePage();
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="px-4 py-6">
             <div class="flex flex-col space-y-6">
-                <div v-if="page.props.flash?.message" class="alert">
-                    <Alert>
-                        <Bell class="h-4 w-4" />
-                        <AlertTitle>Notification</AlertTitle>
-                        <AlertDescription> {{ page.props.flash.message }} </AlertDescription>
-                    </Alert>
-                </div>
                 <HeadingSmall title="Categories" description="Manage your categories" />
-                <Link :href="route('categories.create')"><Button>Add Category</Button></Link>
+                <div class="flex justify-end">
+                    <Link :href="route('categories.create')"
+                        ><Button class="ml-auto"><Plus class="h-4 w-4" /> Add Category</Button></Link
+                    >
+                </div>
                 <Table>
                     <TableCaption>A list of your recent categories.</TableCaption>
                     <TableHeader>
@@ -66,9 +66,7 @@ const page = usePage();
                             <TableCell>{{ category.description ?? '' }}</TableCell>
                             <TableCell class="text-right">
                                 <Link :href="route('categories.edit', category.id)" class="mr-2"><Button variant="secondary">Edit</Button></Link>
-                                <Link :href="route('categories.destroy', category.id)" method="delete" as="button"
-                                    ><Button variant="destructive">Delete</Button></Link
-                                >
+                                <Button variant="destructive" @click="handleDelete(category.id)">Delete</Button>
                             </TableCell>
                         </TableRow>
                     </TableBody>

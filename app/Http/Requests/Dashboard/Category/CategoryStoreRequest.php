@@ -1,5 +1,5 @@
 <?php
-namespace App\Http\Requests\Dashboard;
+namespace App\Http\Requests\Dashboard\Category;
 
 use Illuminate\Foundation\Http\FormRequest;
 

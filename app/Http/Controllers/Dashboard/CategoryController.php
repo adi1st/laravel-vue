@@ -2,9 +2,9 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Dashboard\CategoryStoreRequest;
+use App\Http\Requests\Dashboard\Category\CategoryStoreRequest;
+use App\Http\Requests\Dashboard\Category\CategoryUpdateRequest;
 use App\Models\Category;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
@@ -38,10 +38,18 @@ class CategoryController extends Controller
         try {
             Category::create($data);
             DB::commit();
-            return redirect()->route('categories.index')->with('message', 'Category created successfully');
+            return redirect()->route('categories.index')->with('flash', [
+                'message' => 'Category created successfully.',
+                'variant' => 'default', // atau 'destructive'
+                'title'   => 'Success!',
+            ]);
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->route('categories.index')->with('message', 'Category creation failed: ' . $e->getMessage());
+            return redirect()->route('categories.index')->with('flash', [
+                'message' => 'Category creation failed: ' . $e->getMessage(),
+                'variant' => 'destructive',
+                'title'   => 'Failed!',
+            ]);
         }
     }
 
@@ -58,15 +66,34 @@ class CategoryController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $category = Category::findOrFail($id);
+        return Inertia::render('categories/Edit', compact('category'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(CategoryUpdateRequest $request, $id)
     {
-        //
+        $data = $request->validated();
+
+        DB::beginTransaction();
+        try {
+            Category::findOrFail($id)->update($data);
+            DB::commit();
+            return redirect()->route('categories.index')->with('flash', [
+                'message' => 'Category updated successfully.',
+                'variant' => 'default', // atau 'destructive'
+                'title'   => 'Success!',
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->route('categories.index')->with('flash', [
+                'message' => 'Category update failed: ' . $e->getMessage(),
+                'variant' => 'destructive',
+                'title'   => 'Failed!',
+            ]);
+        }
     }
 
     /**
@@ -74,6 +101,23 @@ class CategoryController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        DB::beginTransaction();
+        try {
+            Category::destroy($id);
+            DB::commit();
+            return redirect()->route('categories.index')->with('flash', [
+                'message' => 'Category deleted successfully.',
+                'variant' => 'default',
+                'title'   => 'Success!',
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->route('categories.index')->with('flash', [
+                'message' => 'Category deletion failed: ' . $e->getMessage(),
+                'variant' => 'destructive',
+                'title'   => 'Failed!',
+            ]);
+        }
+
     }
 }
