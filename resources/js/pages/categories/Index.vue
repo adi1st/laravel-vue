@@ -1,23 +1,17 @@
 <script setup lang="ts">
 import DeleteConfirmation from '@/components/DeleteConfirmation.vue';
 import HeadingSmall from '@/components/HeadingSmall.vue';
+import Pagination from '@/components/pagination/Pagination.vue';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { useModalStore } from '@/stores/modalStore';
-import type { Category } from '@/types';
+import type { Category, PaginatedResponse } from '@/types';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/vue3';
 import { Plus } from 'lucide-vue-next';
 import CategoryDetails from './partials/CategoryDetails.vue';
 import CategoryForm from './partials/CategoryForm.vue';
-
-interface Props {
-    categories: Category[];
-}
-
-// get props from inertia
-const props = defineProps<Props>();
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -25,6 +19,13 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: '/categories',
     },
 ];
+
+const props = defineProps<{
+    categories: PaginatedResponse<Category>;
+    // filters: {
+    //     search: string;
+    // };
+}>();
 
 // modal configs
 const modalStore = useModalStore();
@@ -66,9 +67,6 @@ const openViewModal = (category: Category) => {
             <div class="flex flex-col space-y-6">
                 <HeadingSmall title="Categories" description="Manage your categories" />
                 <div class="flex justify-end">
-                    <!-- <Link :href="route('categories.create')"
-                        ><Button class="ml-auto"><Plus class="h-4 w-4" /> Add Category</Button></Link
-                    > -->
                     <Button class="ml-auto" @click="openCreateModal"><Plus class="h-4 w-4" /> Add Category</Button>
                 </div>
                 <Table>
@@ -83,9 +81,9 @@ const openViewModal = (category: Category) => {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        <TableRow v-for="category in props.categories" :key="category.id">
+                        <TableRow v-for="category in categories.data" :key="category.id">
                             <TableCell class="font-medium">{{ category.id }}</TableCell>
-                            <TableCell> <img src="{{ category.image??'' }}" alt="category image" class="w-[100px]" /> </TableCell>
+                            <TableCell> <img src="{{ category.image }}" alt="category image" class="w-[100px]" /> </TableCell>
                             <TableCell class="font-medium">{{ category.name }}</TableCell>
                             <TableCell>{{ category.description ?? '' }}</TableCell>
                             <TableCell class="text-right">
@@ -96,6 +94,9 @@ const openViewModal = (category: Category) => {
                         </TableRow>
                     </TableBody>
                 </Table>
+                <div class="d-flex justify-content-center mx-auto mt-4">
+                    <Pagination :links="categories.links" />
+                </div>
             </div>
         </div>
     </AppLayout>

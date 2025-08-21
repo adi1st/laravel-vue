@@ -5,17 +5,25 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Dashboard\Category\CategoryStoreRequest;
 use App\Http\Requests\Dashboard\Category\CategoryUpdateRequest;
 use App\Models\Category;
+use App\Repositories\CategoryRepository;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class CategoryController extends Controller
 {
+    protected $category_repo;
+    public function __construct(CategoryRepository $category_repo)
+    {
+        $this->category_repo = $category_repo;
+    }
+
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $categories = Category::latest()->get();
+        $categories = $this->category_repo->getAll();
+        // $categories = Category::latest()->get();
         return Inertia::render('categories/Index', compact('categories'));
     }
 
@@ -24,7 +32,7 @@ class CategoryController extends Controller
      */
     public function create()
     {
-        return Inertia::render('categories/Create');
+        //
     }
 
     /**
@@ -66,8 +74,7 @@ class CategoryController extends Controller
      */
     public function edit(string $id)
     {
-        $category = Category::findOrFail($id);
-        return Inertia::render('categories/Edit', compact('category'));
+        //
     }
 
     /**

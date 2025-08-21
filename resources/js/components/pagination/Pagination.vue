@@ -1,0 +1,29 @@
+<script setup lang="ts">
+import { Link } from '@inertiajs/vue3';
+
+interface PaginationLink {
+    url: string | null;
+    label: string;
+    active: boolean;
+}
+
+defineProps<{
+    links: PaginationLink[];
+}>();
+</script>
+
+<template>
+    <div v-if="links.length > 3" class="-mb-1 flex flex-wrap">
+        <template v-for="(link, key) in links" :key="key">
+            <div v-if="link.url === null" class="mr-1 mb-1 rounded border px-4 py-3 text-sm leading-4 text-gray-400" v-html="link.label" />
+            <Link
+                v-else
+                class="mr-1 mb-1 rounded border px-4 py-3 text-sm leading-4 transition-colors duration-150 hover:bg-gray-100 focus:border-indigo-500 focus:text-indigo-500"
+                :class="{ 'bg-blue-700 text-white hover:bg-blue-600': link.active }"
+                :href="link.url"
+            >
+                <span v-html="link.label"></span>
+            </Link>
+        </template>
+    </div>
+</template>
