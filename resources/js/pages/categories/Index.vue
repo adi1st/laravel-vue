@@ -20,11 +20,8 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-const props = defineProps<{
+defineProps<{
     categories: PaginatedResponse<Category>;
-    // filters: {
-    //     search: string;
-    // };
 }>();
 
 // modal configs
@@ -65,8 +62,8 @@ const openViewModal = (category: Category) => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="px-4 py-6">
             <div class="flex flex-col space-y-6">
-                <HeadingSmall title="Categories" description="Manage your categories" />
-                <div class="flex justify-end">
+                <div class="flex items-center justify-between gap-4">
+                    <HeadingSmall title="Categories" description="Manage your categories" />
                     <Button class="ml-auto" @click="openCreateModal"><Plus class="h-4 w-4" /> Add Category</Button>
                 </div>
                 <Table>
@@ -83,7 +80,7 @@ const openViewModal = (category: Category) => {
                     <TableBody>
                         <TableRow v-for="category in categories.data" :key="category.id">
                             <TableCell class="font-medium">{{ category.id }}</TableCell>
-                            <TableCell> <img src="{{ category.image }}" alt="category image" class="w-[100px]" /> </TableCell>
+                            <TableCell> <img :src="category.image" alt="category image" class="w-[100px]" /> </TableCell>
                             <TableCell class="font-medium">{{ category.name }}</TableCell>
                             <TableCell>{{ category.description ?? '' }}</TableCell>
                             <TableCell class="text-right">

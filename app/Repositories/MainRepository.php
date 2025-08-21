@@ -26,7 +26,7 @@ class MainRepository
             $modelTableName      = $this->model->getTable();
             $paginationParamName = Str::kebab(Str::singular($modelTableName));
 
-            return $query->paginate(2, ['*'], $paginationParamName)->onEachSide(0);
+            return $query->paginate(10, ['*'], $paginationParamName)->onEachSide(0);
         }
 
         return $query->get();

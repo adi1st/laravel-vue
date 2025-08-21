@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import ModalManager from '@/components/ModalManager.vue';
+import ModalManager from '@/components/modals/ModalManager.vue';
 import { Toaster } from '@/components/ui/sonner';
 import AppLayout from '@/layouts/app/AppSidebarLayout.vue';
 // import { useAlertStore, type AlertConfig } from '@/stores/alertStore';

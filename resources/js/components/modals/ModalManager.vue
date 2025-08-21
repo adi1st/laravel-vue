@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { useModalStore } from '@/stores/modalStore';
 import { computed } from 'vue';
-import Dialog from './ui/dialog/Dialog.vue';
-import DialogContent from './ui/dialog/DialogContent.vue';
+import Dialog from '../ui/dialog/Dialog.vue';
+import DialogContent from '../ui/dialog/DialogContent.vue';
 
 const modalStore = useModalStore();
 

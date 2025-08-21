@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { buttonVariants } from '@/components/ui/button'; // Impor buttonVariants
+import { cn } from '@/lib/utils'; // Impor cn utility
 import { Link } from '@inertiajs/vue3';
 
 interface PaginationLink {
@@ -13,15 +15,16 @@ defineProps<{
 </script>
 
 <template>
-    <div v-if="links.length > 3" class="-mb-1 flex flex-wrap">
+    <div v-if="links.length > 3" class="flex flex-wrap items-center gap-2">
         <template v-for="(link, key) in links" :key="key">
-            <div v-if="link.url === null" class="mr-1 mb-1 rounded border px-4 py-3 text-sm leading-4 text-gray-400" v-html="link.label" />
-            <Link
-                v-else
-                class="mr-1 mb-1 rounded border px-4 py-3 text-sm leading-4 transition-colors duration-150 hover:bg-gray-100 focus:border-indigo-500 focus:text-indigo-500"
-                :class="{ 'bg-blue-700 text-white hover:bg-blue-600': link.active }"
-                :href="link.url"
-            >
+            <!-- Tombol non-link (misalnya '...') yang dinonaktifkan -->
+            <div
+                v-if="link.url === null"
+                :class="cn(buttonVariants({ variant: 'outline' }), 'cursor-not-allowed text-muted-foreground')"
+                v-html="link.label"
+            />
+            <!-- Komponen Link yang bisa diklik, sekarang ditata seperti Button -->
+            <Link v-else :class="cn(buttonVariants({ variant: link.active ? 'default' : 'outline' }))" :href="link.url">
                 <span v-html="link.label"></span>
             </Link>
         </template>
