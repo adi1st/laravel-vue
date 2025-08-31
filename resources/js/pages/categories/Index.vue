@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import DeleteConfirmation from '@/components/DeleteConfirmation.vue';
+import Filters from '@/components/filters/Filters.vue';
+import SearchFilter from '@/components/filters/SearchFilter.vue';
 import HeadingSmall from '@/components/HeadingSmall.vue';
 import Pagination from '@/components/pagination/Pagination.vue';
 import { Button } from '@/components/ui/button';
@@ -22,6 +24,10 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 defineProps<{
     categories: PaginatedResponse<Category>;
+    filters: {
+        search: string;
+        filter: string;
+    };
 }>();
 
 // modal configs
@@ -65,6 +71,11 @@ const openViewModal = (category: Category) => {
                 <div class="flex items-center justify-between gap-4">
                     <HeadingSmall title="Categories" description="Manage your categories" />
                     <Button class="ml-auto" @click="openCreateModal"><Plus class="h-4 w-4" /> Add Category</Button>
+                </div>
+                <!-- Input Pencarian -->
+                <div class="flex items-center justify-end space-x-4">
+                    <SearchFilter :model-value="filters.search || null" route-name="categories.index" class="max-w-sm" />
+                    <Filters :model-value="null" route-name="categories.index" class="max-w-sm" />
                 </div>
                 <Table>
                     <TableCaption>A list of your recent categories.</TableCaption>

@@ -6,6 +6,7 @@ use App\Http\Requests\Dashboard\Category\CategoryStoreRequest;
 use App\Http\Requests\Dashboard\Category\CategoryUpdateRequest;
 use App\Models\Category;
 use App\Repositories\CategoryRepository;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
@@ -20,11 +21,11 @@ class CategoryController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $categories = $this->category_repo->getAll();
-        // $categories = Category::latest()->get();
-        return Inertia::render('categories/Index', compact('categories'));
+        $filters    = $request->all();
+        $categories = $this->category_repo->getAll($filters);
+        return Inertia::render('categories/Index', compact('categories', 'filters'));
     }
 
     /**
