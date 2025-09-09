@@ -21,6 +21,12 @@ class Category extends Model
                     $subQuery->where('name', 'like', $searchTerm)
                         ->orWhere('description', 'like', $searchTerm);
                 });
-            });
+            })->when($filters['order'] ?? false, function ($q) use ($filters) {
+            if ($filters['order'] === 'latest') {
+                $q->orderBy('created_at', 'desc');
+            } elseif ($filters['order'] === 'oldest') {
+                $q->orderBy('created_at', 'asc');
+            }
+        });
     }
 }

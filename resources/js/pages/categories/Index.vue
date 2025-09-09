@@ -24,9 +24,9 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 defineProps<{
     categories: PaginatedResponse<Category>;
+    search: string;
     filters: {
-        search: string;
-        filter: string;
+        order: string;
     };
 }>();
 
@@ -72,10 +72,10 @@ const openViewModal = (category: Category) => {
                     <HeadingSmall title="Categories" description="Manage your categories" />
                     <Button class="ml-auto" @click="openCreateModal"><Plus class="h-4 w-4" /> Add Category</Button>
                 </div>
-                <!-- Input Pencarian -->
+                <!-- Filter-->
                 <div class="flex items-center justify-end space-x-4">
-                    <SearchFilter :model-value="filters.search || null" route-name="categories.index" class="max-w-sm" />
-                    <Filters :model-value="null" route-name="categories.index" class="max-w-sm" />
+                    <SearchFilter :model-value="search || null" class="max-w-sm" />
+                    <Filters :filters="filters || null" />
                 </div>
                 <Table>
                     <TableCaption>A list of your recent categories.</TableCaption>

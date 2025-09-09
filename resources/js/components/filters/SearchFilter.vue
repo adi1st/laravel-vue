@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import { Input } from '@/components/ui/input';
-import { router } from '@inertiajs/vue3';
+import { router, usePage } from '@inertiajs/vue3';
 import { debounce } from 'lodash';
 import { ref, watch } from 'vue';
 
 const props = defineProps<{
     modelValue: string | null;
-    routeName: string;
     class?: string;
 }>();
 
@@ -16,7 +15,7 @@ watch(
     search,
     debounce((value: string | null) => {
         router.get(
-            route(props.routeName),
+            usePage().url,
             { search: value || undefined },
             {
                 preserveState: true,

@@ -1,37 +1,53 @@
 <script setup lang="ts">
-import { router } from '@inertiajs/vue3';
-import { debounce } from 'lodash';
+import { router, usePage } from '@inertiajs/vue3';
 import { ListFilter } from 'lucide-vue-next';
-import { ref, watch } from 'vue';
+import { ref } from 'vue';
 import Button from '../ui/button/Button.vue';
-import Input from '../ui/input/Input.vue';
 import Label from '../ui/label/Label.vue';
 import Popover from '../ui/popover/Popover.vue';
 import PopoverContent from '../ui/popover/PopoverContent.vue';
 import PopoverTrigger from '../ui/popover/PopoverTrigger.vue';
+import Select from '../ui/select/Select.vue';
+import SelectContent from '../ui/select/SelectContent.vue';
+import SelectGroup from '../ui/select/SelectGroup.vue';
+import SelectItem from '../ui/select/SelectItem.vue';
+import SelectLabel from '../ui/select/SelectLabel.vue';
+import SelectTrigger from '../ui/select/SelectTrigger.vue';
+import SelectValue from '../ui/select/SelectValue.vue';
 
 const props = defineProps<{
-    modelValue: string | null;
-    routeName: string;
-    class?: string;
+    filters: {
+        order: string | null;
+    };
 }>();
 
-const search = ref(props.modelValue || '');
+const selectedOrder = ref(props.filters.order || '');
 
-watch(
-    search,
-    debounce((value: string | null) => {
-        router.get(
-            route(props.routeName),
-            { search: value || undefined },
-            {
-                preserveState: true,
-                replace: true,
-                preserveScroll: true,
-            },
-        );
-    }, 300),
-);
+function applyFilters() {
+    router.get(
+        // Kunjungi URL saat ini
+        usePage().url,
+        { order: selectedOrder.value },
+        {
+            preserveState: true,
+            replace: true,
+            preserveScroll: true,
+        },
+    );
+}
+
+function resetFilters() {
+    router.get(
+        usePage().url,
+        { order: undefined },
+        {
+            preserveState: true,
+            replace: true,
+            preserveScroll: true,
+        },
+    );
+    selectedOrder.value = '';
+}
 </script>
 
 <template>
@@ -39,7 +55,7 @@ watch(
         <PopoverTrigger as-child>
             <Button variant="outline"><ListFilter /></Button>
         </PopoverTrigger>
-        <PopoverContent class="w-80">
+        <PopoverContent class="mr-4 w-80 md:mr-6">
             <div class="grid gap-4">
                 <div class="space-y-2">
                     <h4 class="leading-none font-medium">Filters</h4>
@@ -47,20 +63,25 @@ watch(
                 </div>
                 <div class="grid gap-2">
                     <div class="grid grid-cols-3 items-center gap-4">
-                        <Label for="width">Width</Label>
-                        <Input id="width" type="text" default-value="100%" class="col-span-2 h-8" />
+                        <Label for="width">Short By</Label>
+                        <Select class="col-span-2 h-8" name="order" v-model="selectedOrder">
+                            <SelectTrigger class="w-[180px]">
+                                <SelectValue placeholder="Select.." />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectGroup>
+                                    <SelectLabel>Select by</SelectLabel>
+                                    <SelectItem value="latest"> Latest </SelectItem>
+                                    <SelectItem value="oldest"> Oldest </SelectItem>
+                                </SelectGroup>
+                            </SelectContent>
+                        </Select>
                     </div>
-                    <div class="grid grid-cols-3 items-center gap-4">
-                        <Label for="maxWidth">Max. width</Label>
-                        <Input id="maxWidth" type="text" default-value="300px" class="col-span-2 h-8" />
-                    </div>
-                    <div class="grid grid-cols-3 items-center gap-4">
-                        <Label for="height">Height</Label>
-                        <Input id="height" type="text" default-value="25px" class="col-span-2 h-8" />
-                    </div>
-                    <div class="grid grid-cols-3 items-center gap-4">
-                        <Label for="maxHeight">Max. height</Label>
-                        <Input id="maxHeight" type="text" default-value="none" class="col-span-2 h-8" />
+                </div>
+                <div class="space-y-2">
+                    <div class="flex items-center justify-end gap-2">
+                        <Button @click="resetFilters" variant="secondary">Reset</Button>
+                        <Button @click="applyFilters">Apply</Button>
                     </div>
                 </div>
             </div>
