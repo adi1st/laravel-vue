@@ -40,7 +40,17 @@ jobs:
           npm install
           npm run build
 
-      # Langkah 6: Deploy file ke server menggunakan SCP
+      # Langkah 6: Backup .env file on server
+      - name: Backup .env file
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.PORT || 22 }}
+          script: 'cp ${{ secrets.TARGET_DIR }}/.env ${{ secrets.TARGET_DIR }}/../.env.bak || true'
+
+      # Langkah 7: Deploy file ke server menggunakan SCP
       - name: Copy files to server via SCP
         uses: appleboy/scp-action@master
         with:
@@ -59,7 +69,17 @@ jobs:
             .github/
             node_modules/
 
-      # Langkah 7: Menjalankan perintah di server setelah deploy
+      # Langkah 8: Restore .env file on server
+      - name: Restore .env file
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.PORT || 22 }}
+          script: 'mv ${{ secrets.TARGET_DIR }}/../.env.bak ${{ secrets.TARGET_DIR }}/.env || true'
+
+      # Langkah 9: Menjalankan perintah di server setelah deploy
       - name: Run commands on server
         uses: appleboy/ssh-action@master
         with:
