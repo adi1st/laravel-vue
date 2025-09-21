@@ -19,7 +19,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.3' # Sesuaikan dengan versi PHP Anda
+          php-version: '8.2' # Sesuaikan dengan versi PHP Anda
           extensions: mbstring, dom, fileinfo, mysql
           ini-values: post_max_size=256M, upload_max_filesize=256M
           coverage: none
@@ -32,7 +32,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '20' # Sesuaikan dengan versi Node.js Anda
+          node-version: '18' # Sesuaikan dengan versi Node.js Anda
 
       # Langkah 5: Install dependensi NPM dan build aset
       - name: Install NPM dependencies and build
@@ -47,7 +47,8 @@ jobs:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - name: Deploy with rsync
-        run: rsync -avz --delete --exclude='.git/' --exclude='.github/' --exclude='node_modules/' --exclude='.env' ./ ${{ secrets.USERNAME }}@${{ secrets.HOST }}:${{ secrets.TARGET_DIR }}
+        # Menambahkan -e "ssh -p ..." untuk menentukan port kustom untuk rsync
+        run: rsync -avz -e "ssh -p ${{ secrets.PORT || 22 }}" --delete --exclude='.git/' --exclude='.github/' --exclude='node_modules/' --exclude='.env' ./ ${{ secrets.USERNAME }}@${{ secrets.HOST }}:${{ secrets.TARGET_DIR }}
 
       # Langkah 7: Menjalankan perintah di server setelah deploy
       - name: Run commands on server
@@ -56,6 +57,7 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.PORT || 22 }} # Menambahkan parameter port
           script: |
             cd ${{ secrets.TARGET_DIR }}
             php artisan migrate --force
