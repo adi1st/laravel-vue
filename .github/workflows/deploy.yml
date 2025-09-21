@@ -40,16 +40,14 @@ jobs:
           npm install
           npm run build
 
-      # Langkah 6: Deploy file ke server menggunakan rsync
-      - name: Deploy to Server with rsync
-        uses: burnett01/rsync-deploy@v6
+      # Langkah 6: Deploy file ke server menggunakan rsync manual
+      - name: Setup SSH Agent
+        uses: webfactory/ssh-agent@v0.9.0
         with:
-          private_key: ${{ secrets.SSH_PRIVATE_KEY }}
-          remote_host: ${{ secrets.HOST }}
-          remote_user: ${{ secrets.USERNAME }}
-          source_dir: './'
-          target_dir: ${{ secrets.TARGET_DIR }}
-          exclude: '.git/, .github/, node_modules/, .env'
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Deploy with rsync
+        run: rsync -avz --delete --exclude='.git/' --exclude='.github/' --exclude='node_modules/' --exclude='.env' ./ ${{ secrets.USERNAME }}@${{ secrets.HOST }}:${{ secrets.TARGET_DIR }}
 
       # Langkah 7: Menjalankan perintah di server setelah deploy
       - name: Run commands on server
