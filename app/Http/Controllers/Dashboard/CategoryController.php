@@ -2,21 +2,30 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Dashboard\CategoryStoreRequest;
+use App\Http\Requests\Dashboard\Category\CategoryStoreRequest;
+use App\Http\Requests\Dashboard\Category\CategoryUpdateRequest;
 use App\Models\Category;
+use App\Repositories\CategoryRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class CategoryController extends Controller
 {
+    protected $category_repo;
+    public function __construct(CategoryRepository $category_repo)
+    {
+        $this->category_repo = $category_repo;
+    }
+
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $categories = Category::latest()->get();
-        return Inertia::render('categories/Index', compact('categories'));
+        $filters    = $request->all();
+        $categories = $this->category_repo->getAll($filters);
+        return Inertia::render('categories/Index', compact('categories', 'filters'));
     }
 
     /**
@@ -24,7 +33,7 @@ class CategoryController extends Controller
      */
     public function create()
     {
-        return Inertia::render('categories/Create');
+        //
     }
 
     /**
@@ -38,10 +47,18 @@ class CategoryController extends Controller
         try {
             Category::create($data);
             DB::commit();
-            return redirect()->route('categories.index')->with('message', 'Category created successfully');
+            return redirect()->route('categories.index')->with('flash', [
+                'message' => 'Category created successfully.',
+                'variant' => 'default', // atau 'destructive'
+                'title'   => 'Success!',
+            ]);
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->route('categories.index')->with('message', 'Category creation failed: ' . $e->getMessage());
+            return redirect()->route('categories.index')->with('flash', [
+                'message' => 'Category creation failed: ' . $e->getMessage(),
+                'variant' => 'destructive',
+                'title'   => 'Failed!',
+            ]);
         }
     }
 
@@ -64,9 +81,27 @@ class CategoryController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(CategoryUpdateRequest $request, $id)
     {
-        //
+        $data = $request->validated();
+
+        DB::beginTransaction();
+        try {
+            Category::findOrFail($id)->update($data);
+            DB::commit();
+            return redirect()->route('categories.index')->with('flash', [
+                'message' => 'Category updated successfully.',
+                'variant' => 'default', // atau 'destructive'
+                'title'   => 'Success!',
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->route('categories.index')->with('flash', [
+                'message' => 'Category update failed: ' . $e->getMessage(),
+                'variant' => 'destructive',
+                'title'   => 'Failed!',
+            ]);
+        }
     }
 
     /**
@@ -74,6 +109,23 @@ class CategoryController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        DB::beginTransaction();
+        try {
+            Category::destroy($id);
+            DB::commit();
+            return redirect()->route('categories.index')->with('flash', [
+                'message' => 'Category deleted successfully.',
+                'variant' => 'default',
+                'title'   => 'Success!',
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->route('categories.index')->with('flash', [
+                'message' => 'Category deletion failed: ' . $e->getMessage(),
+                'variant' => 'destructive',
+                'title'   => 'Failed!',
+            ]);
+        }
+
     }
 }

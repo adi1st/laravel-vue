@@ -1,0 +1,67 @@
+name: Deploy Laravel & Vue to Shared Hosting
+
+# Memicu workflow setiap kali ada push ke branch 'main'
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Langkah 1: Mengambil kode dari repository
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Langkah 2: Setup PHP dengan versi yang sesuai
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3' # Sesuaikan dengan versi PHP Anda
+          extensions: mbstring, dom, fileinfo, mysql
+          ini-values: post_max_size=256M, upload_max_filesize=256M
+          coverage: none
+
+      # Langkah 3: Install dependensi Composer
+      - name: Install Composer dependencies
+        run: composer install --prefer-dist --no-progress --no-dev --optimize-autoloader
+
+      # Langkah 4: Setup Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20' # Sesuaikan dengan versi Node.js Anda
+
+      # Langkah 5: Install dependensi NPM dan build aset
+      - name: Install NPM dependencies and build
+        run: |
+          npm install
+          npm run build
+
+      # Langkah 6: Deploy file ke server menggunakan rsync
+      - name: Deploy to Server
+        uses: easing-themes/ssh-deploy@main
+        with:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          ARGS: '-rlgoDzvc -i --delete'
+          SOURCE: '/'
+          REMOTE_HOST: ${{ secrets.HOST }}
+          REMOTE_USER: ${{ secrets.USERNAME }}
+          TARGET: ${{ secrets.TARGET_DIR }}
+          EXCLUDE: '/.git/, /.github/, /node_modules/, .env'
+
+      # Langkah 7: Menjalankan perintah di server setelah deploy
+      - name: Run commands on server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd ${{ secrets.TARGET_DIR }}
+            php artisan migrate --force
+            php artisan optimize:clear
+            php artisan optimize
+            # php artisan storage:link # Uncomment jika perlu

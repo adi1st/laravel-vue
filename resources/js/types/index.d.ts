@@ -36,3 +36,33 @@ export interface User {
 }
 
 export type BreadcrumbItemType = BreadcrumbItem;
+
+export interface Category {
+    id: number;
+    name: string;
+    description: string;
+    image: string;
+}
+
+export interface PaginatedResponse<T> {
+    data: T[];
+    links: {
+        url: string | null;
+        label: string;
+        active: boolean;
+    }[];
+    meta: {
+        current_page: number;
+        from: number;
+        last_page: number;
+        links: {
+            url: string | null;
+            label: string;
+            active: boolean;
+        }[];
+        path: string;
+        per_page: number;
+        to: number;
+        total: number;
+    };
+}

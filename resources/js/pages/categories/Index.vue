@@ -1,26 +1,19 @@
 <script setup lang="ts">
+import DeleteConfirmation from '@/components/DeleteConfirmation.vue';
+import Filters from '@/components/filters/Filters.vue';
+import SearchFilter from '@/components/filters/SearchFilter.vue';
 import HeadingSmall from '@/components/HeadingSmall.vue';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import Pagination from '@/components/pagination/Pagination.vue';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/AppLayout.vue';
+import { useModalStore } from '@/stores/modalStore';
+import type { Category, PaginatedResponse } from '@/types';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link, usePage } from '@inertiajs/vue3';
-import { Bell } from 'lucide-vue-next';
-
-interface Category {
-    id: number;
-    name: string;
-    description: string;
-    image: string;
-}
-
-interface Props {
-    categories: Category[];
-}
-
-// get props from inertia
-const props = defineProps<Props>();
+import { Head } from '@inertiajs/vue3';
+import { Plus } from 'lucide-vue-next';
+import CategoryDetails from './partials/CategoryDetails.vue';
+import CategoryForm from './partials/CategoryForm.vue';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -29,7 +22,44 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-const page = usePage();
+defineProps<{
+    categories: PaginatedResponse<Category>;
+    search: string;
+    filters: {
+        order: string;
+    };
+}>();
+
+// modal configs
+const modalStore = useModalStore();
+
+//'Delete'
+const openDeleteModal = (category: Category) => {
+    modalStore.open(
+        DeleteConfirmation,
+        {
+            title: `Delete Category: ${category.name}`,
+            message: 'Are you sure you want to delete this category? This action cannot be undone.',
+            deleteUrl: route('categories.destroy', category.id),
+        },
+        { size: 'sm' },
+    );
+};
+
+//'Create'
+const openCreateModal = () => {
+    modalStore.open(CategoryForm, null, { size: 'md' });
+};
+
+//'Update'
+const openUpdateModal = (category: Category) => {
+    modalStore.open(CategoryForm, { category }, { size: 'lg' });
+};
+
+//'Read' (View)
+const openViewModal = (category: Category) => {
+    modalStore.open(CategoryDetails, { category }, { size: 'md' });
+};
 </script>
 
 <template>
@@ -38,15 +68,15 @@ const page = usePage();
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="px-4 py-6">
             <div class="flex flex-col space-y-6">
-                <div v-if="page.props.flash?.message" class="alert">
-                    <Alert>
-                        <Bell class="h-4 w-4" />
-                        <AlertTitle>Notification</AlertTitle>
-                        <AlertDescription> {{ page.props.flash.message }} </AlertDescription>
-                    </Alert>
+                <div class="flex items-center justify-between gap-4">
+                    <HeadingSmall title="Categories" description="Manage your categories" />
+                    <Button class="ml-auto" @click="openCreateModal"><Plus class="h-4 w-4" /> Add Category</Button>
                 </div>
-                <HeadingSmall title="Categories" description="Manage your categories" />
-                <Link :href="route('categories.create')"><Button>Add Category</Button></Link>
+                <!-- Filter-->
+                <div class="flex items-center justify-end space-x-4">
+                    <SearchFilter :model-value="search || null" class="max-w-sm" />
+                    <Filters :filters="filters || null" />
+                </div>
                 <Table>
                     <TableCaption>A list of your recent categories.</TableCaption>
                     <TableHeader>
@@ -59,20 +89,22 @@ const page = usePage();
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        <TableRow v-for="category in props.categories" :key="category.id">
+                        <TableRow v-for="category in categories.data" :key="category.id">
                             <TableCell class="font-medium">{{ category.id }}</TableCell>
-                            <TableCell> <img src="{{ category.image??'' }}" alt="category image" class="w-[100px]" /> </TableCell>
+                            <TableCell> <img :src="category.image" alt="category image" class="w-[100px]" /> </TableCell>
                             <TableCell class="font-medium">{{ category.name }}</TableCell>
                             <TableCell>{{ category.description ?? '' }}</TableCell>
                             <TableCell class="text-right">
-                                <Link :href="route('categories.edit', category.id)" class="mr-2"><Button variant="secondary">Edit</Button></Link>
-                                <Link :href="route('categories.destroy', category.id)" method="delete" as="button"
-                                    ><Button variant="destructive">Delete</Button></Link
-                                >
+                                <Button variant="ghost" @click="openViewModal(category)" class="mr-2">View</Button>
+                                <Button variant="outline" @click="openUpdateModal(category)" class="mr-2">Edit</Button>
+                                <Button variant="destructive" @click="openDeleteModal(category)" class="mr-2">Delete</Button>
                             </TableCell>
                         </TableRow>
                     </TableBody>
                 </Table>
+                <div class="d-flex justify-content-center mx-auto mt-4">
+                    <Pagination :links="categories.links" />
+                </div>
             </div>
         </div>
     </AppLayout>
