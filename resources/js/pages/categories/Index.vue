@@ -70,7 +70,7 @@ const openViewModal = (category: Category) => {
             <div class="flex flex-col space-y-6">
                 <div class="flex items-center justify-between gap-4">
                     <HeadingSmall title="Categories" description="Manage your categories" />
-                    <Button class="ml-auto" @click="openCreateModal"><Plus class="h-4 w-4" /> Add Category</Button>
+                    <Button class="ml-auto" @click="openCreateModal"><Plus class="h-4 w-4" /> Tambah Category</Button>
                 </div>
                 <!-- Filter-->
                 <div class="flex items-center justify-end space-x-4">
