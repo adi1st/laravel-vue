@@ -7,11 +7,12 @@ import Pagination from '@/components/pagination/Pagination.vue';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { useModalStore } from '@/stores/modalStore';
+// import { useModalStore } from '@/stores/modalStore';
+import { useCrudModal } from '@/composables/useCrudModals';
 import type { Category, PaginatedResponse } from '@/types';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/vue3';
-import { Plus } from 'lucide-vue-next';
+import { Eye, Plus, SquarePen, Trash } from 'lucide-vue-next';
 import CategoryDetails from './partials/CategoryDetails.vue';
 import CategoryForm from './partials/CategoryForm.vue';
 
@@ -30,36 +31,44 @@ defineProps<{
     };
 }>();
 
+const { openDeleteModal, openCreateModal, openUpdateModal, openViewModal } = useCrudModal<Category>(
+    DeleteConfirmation,
+    CategoryForm,
+    CategoryDetails,
+    'categories.destroy',
+    'Category',
+);
+
 // modal configs
-const modalStore = useModalStore();
+// const modalStore = useModalStore();
 
 //'Delete'
-const openDeleteModal = (category: Category) => {
-    modalStore.open(
-        DeleteConfirmation,
-        {
-            title: `Delete Category: ${category.name}`,
-            message: 'Are you sure you want to delete this category? This action cannot be undone.',
-            deleteUrl: route('categories.destroy', category.id),
-        },
-        { size: 'sm' },
-    );
-};
+// const openDeleteModal = (category: Category) => {
+//     modalStore.open(
+//         DeleteConfirmation,
+//         {
+//             title: `Delete Category: ${category.name}`,
+//             message: 'Are you sure you want to delete this category? This action cannot be undone.',
+//             deleteUrl: route('categories.destroy', category.id),
+//         },
+//         { size: 'sm' },
+//     );
+// };
 
 //'Create'
-const openCreateModal = () => {
-    modalStore.open(CategoryForm, null, { size: 'md' });
-};
+// const openCreateModal = () => {
+//     modalStore.open(CategoryForm, null, { size: 'md' });
+// };
 
 //'Update'
-const openUpdateModal = (category: Category) => {
-    modalStore.open(CategoryForm, { category }, { size: 'lg' });
-};
+// const openUpdateModal = (category: Category) => {
+//     modalStore.open(CategoryForm, { category }, { size: 'lg' });
+// };
 
 //'Read' (View)
-const openViewModal = (category: Category) => {
-    modalStore.open(CategoryDetails, { category }, { size: 'md' });
-};
+// const openViewModal = (category: Category) => {
+//     modalStore.open(CategoryDetails, { category }, { size: 'md' });
+// };
 </script>
 
 <template>
@@ -95,9 +104,9 @@ const openViewModal = (category: Category) => {
                             <TableCell class="font-medium">{{ category.name }}</TableCell>
                             <TableCell>{{ category.description ?? '' }}</TableCell>
                             <TableCell class="text-right">
-                                <Button variant="ghost" @click="openViewModal(category)" class="mr-2">View</Button>
-                                <Button variant="outline" @click="openUpdateModal(category)" class="mr-2">Edit</Button>
-                                <Button variant="destructive" @click="openDeleteModal(category)" class="mr-2">Delete</Button>
+                                <Button variant="ghost" @click="openViewModal(category)" class="mr-2"><Eye /></Button>
+                                <Button variant="outline" @click="openUpdateModal(category)" class="mr-2"><SquarePen /></Button>
+                                <Button variant="destructive" @click="openDeleteModal(category)" class="mr-2"><Trash /></Button>
                             </TableCell>
                         </TableRow>
                     </TableBody>

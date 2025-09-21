@@ -8,39 +8,56 @@ on:
 
 jobs:
   deploy:
+    name: Build & Deploy Application
     runs-on: ubuntu-latest
 
     steps:
-      # Langkah 1: Mengambil kode dari repository
-      - name: Checkout repository
+      # Langkah 1: Checkout Kode
+      - name: 1. Checkout repository
         uses: actions/checkout@v3
 
-      # Langkah 2: Setup PHP dengan versi yang sesuai
-      - name: Setup PHP
+      # Langkah 2: Setup PHP & Cache Composer
+      - name: 2. Setup PHP and Composer
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.3' # Sesuaikan dengan versi PHP Anda
+          php-version: '8.3'
           extensions: mbstring, dom, fileinfo, mysql
-          ini-values: post_max_size=256M, upload_max_filesize=256M
           coverage: none
+      - name: Cache Composer dependencies
+        uses: actions/cache@v3
+        with:
+          path: vendor
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
 
-      # Langkah 3: Install dependensi Composer
-      - name: Install Composer dependencies
-        run: composer install --prefer-dist --no-progress --no-dev --optimize-autoloader
-
-      # Langkah 4: Setup Node.js
-      - name: Setup Node.js
+      # Langkah 3: Setup Node.js & Cache NPM
+      - name: 3. Setup Node.js and NPM
         uses: actions/setup-node@v3
         with:
-          node-version: '20' # Sesuaikan dengan versi Node.js Anda
+          node-version: '20'
+      - name: Cache Node modules
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
 
-      # Langkah 5: Install dependensi NPM dan build aset
-      - name: Install NPM dependencies and build
+      # Langkah 4: Build Aplikasi
+      - name: 4. Build Application Assets
         run: |
+          composer install --prefer-dist --no-progress --no-dev --optimize-autoloader
           npm install
           npm run build
+          rm -rf .git .github node_modules
 
-      # Langkah 6: Backup .env file on server
+      # Langkah 5: Deploy ke Server
+      - name: 5. Deploy to Server
+        env:
+          TARGET_DIR: ${{ secrets.TARGET_DIR }}
+        run: |
+          echo "Starting deployment process..."
       - name: Backup .env file
         uses: appleboy/ssh-action@master
         with:
@@ -49,38 +66,19 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.PORT || 22 }}
           script: 'cp ${{ secrets.TARGET_DIR }}/.env ${{ secrets.TARGET_DIR }}/../.env.bak || true'
-
-      # Langkah 7: Deploy file ke server menggunakan SCP
-      - name: Copy files to server via SCP
+      - name: Deploy files with SCP
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.PORT || 22 }}
-          source: './' # Sumbernya adalah semua file di direktori saat ini
+          source: './'
           target: ${{ secrets.TARGET_DIR }}
-          rm: true # Menghapus konten di direktori tujuan sebelum menyalin
+          rm: true
           overwrite: true
-          # Hapus file/folder yang tidak perlu dideploy
-          strip_components: 1 # Menghindari pembuatan folder tambahan
-          exclude: |
-            .git/
-            .github/
-            node_modules/
-
-      # Langkah 8: Restore .env file on server
-      - name: Restore .env file
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.PORT || 22 }}
-          script: 'mv ${{ secrets.TARGET_DIR }}/../.env.bak ${{ secrets.TARGET_DIR }}/.env || true'
-
-      # Langkah 9: Menjalankan perintah di server setelah deploy
-      - name: Run commands on server
+          strip_components: 1
+      - name: Restore .env & Finalize Deployment
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.HOST }}
@@ -88,8 +86,11 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.PORT || 22 }}
           script: |
+            echo "Restoring .env file..."
+            mv ${{ secrets.TARGET_DIR }}/../.env.bak ${{ secrets.TARGET_DIR }}/.env || true
             cd ${{ secrets.TARGET_DIR }}
+            echo "Running post-deployment commands..."
             php artisan migrate --force
             php artisan optimize:clear
             php artisan optimize
-            # php artisan storage:link # Uncomment jika perlu
+            echo "Deployment finished successfully."
