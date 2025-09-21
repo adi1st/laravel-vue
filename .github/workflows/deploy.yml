@@ -40,37 +40,33 @@ jobs:
           npm install
           npm run build
 
-      # Langkah 6: Install rsync
-      - name: Install rsync
-        run: sudo apt-get update && sudo apt-get install -y rsync
-
-      # Langkah 7: Deploy file ke server menggunakan rsync
-      - name: Deploy with rsync
-        uses: webfactory/ssh-agent@v0.9.0
+      # Langkah 6: Deploy file ke server menggunakan SCP
+      - name: Copy files to server via SCP
+        uses: appleboy/scp-action@master
         with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-        run: |
-          # Tambahkan host server ke known_hosts untuk menghindari error verifikasi
-          mkdir -p ~/.ssh
-          ssh-keyscan -p ${{ secrets.PORT || 22 }} -H ${{ secrets.HOST }} >> ~/.ssh/known_hosts
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.PORT || 22 }}
+          source: './' # Sumbernya adalah semua file di direktori saat ini
+          target: ${{ secrets.TARGET_DIR }}
+          rm: true # Menghapus konten di direktori tujuan sebelum menyalin
+          overwrite: true
+          # Hapus file/folder yang tidak perlu dideploy
+          strip_components: 1 # Menghindari pembuatan folder tambahan
+          exclude: |
+            .git/
+            .github/
+            node_modules/
 
-          # Jalankan perintah rsync
-          rsync -avz -e "ssh -p ${{ secrets.PORT || 22 }}" \
-          --delete \
-          --exclude='.git/' \
-          --exclude='.github/' \
-          --exclude='node_modules/' \
-          --exclude='.env' \
-          ./ ${{ secrets.USERNAME }}@${{ secrets.HOST }}:${{ secrets.TARGET_DIR }}
-
-      # Langkah 8: Menjalankan perintah di server setelah deploy
+      # Langkah 7: Menjalankan perintah di server setelah deploy
       - name: Run commands on server
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.PORT || 22 }} # Menambahkan parameter port
+          port: ${{ secrets.PORT || 22 }}
           script: |
             cd ${{ secrets.TARGET_DIR }}
             php artisan migrate --force
