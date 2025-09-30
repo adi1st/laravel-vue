@@ -38,37 +38,6 @@ const { openDeleteModal, openCreateModal, openUpdateModal, openViewModal } = use
     'categories.destroy',
     'Category',
 );
-
-// modal configs
-// const modalStore = useModalStore();
-
-//'Delete'
-// const openDeleteModal = (category: Category) => {
-//     modalStore.open(
-//         DeleteConfirmation,
-//         {
-//             title: `Delete Category: ${category.name}`,
-//             message: 'Are you sure you want to delete this category? This action cannot be undone.',
-//             deleteUrl: route('categories.destroy', category.id),
-//         },
-//         { size: 'sm' },
-//     );
-// };
-
-//'Create'
-// const openCreateModal = () => {
-//     modalStore.open(CategoryForm, null, { size: 'md' });
-// };
-
-//'Update'
-// const openUpdateModal = (category: Category) => {
-//     modalStore.open(CategoryForm, { category }, { size: 'lg' });
-// };
-
-//'Read' (View)
-// const openViewModal = (category: Category) => {
-//     modalStore.open(CategoryDetails, { category }, { size: 'md' });
-// };
 </script>
 
 <template>
@@ -79,7 +48,7 @@ const { openDeleteModal, openCreateModal, openUpdateModal, openViewModal } = use
             <div class="flex flex-col space-y-6">
                 <div class="flex items-center justify-between gap-4">
                     <HeadingSmall title="Categories" description="Manage your categories" />
-                    <Button class="ml-auto" @click="openCreateModal"><Plus class="h-4 w-4" /> Tambah Category</Button>
+                    <Button class="ml-auto" @click="openCreateModal"><Plus class="h-4 w-4" /> Add Category</Button>
                 </div>
                 <!-- Filter-->
                 <div class="flex items-center justify-end space-x-4">
