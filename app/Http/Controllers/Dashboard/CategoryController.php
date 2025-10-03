@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers\Dashboard;
 
+use App\Helper\Helper;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Dashboard\Category\CategoryStoreRequest;
 use App\Http\Requests\Dashboard\Category\CategoryUpdateRequest;
@@ -45,7 +46,13 @@ class CategoryController extends Controller
 
         DB::beginTransaction();
         try {
-            Category::create($data);
+            if ($request->hasFile('image')) {
+                $data['image'] = Helper::upload_file(
+                    $request->file('image'),
+                    $this->category_repo->upload_directory
+                );
+            }
+            $this->category_repo->store($data);
             DB::commit();
             return redirect()->route('categories.index')->with('flash', [
                 'message' => 'Category created successfully.',
@@ -84,10 +91,19 @@ class CategoryController extends Controller
     public function update(CategoryUpdateRequest $request, $id)
     {
         $data = $request->validated();
+        dd($data);
 
         DB::beginTransaction();
         try {
-            Category::findOrFail($id)->update($data);
+            if ($request->hasFile('image')) {
+                $category = $this->category_repo->getById($id);
+                Helper::delete_file($category->image);
+                $data['image'] = Helper::upload_file(
+                    $request->file('image'),
+                    $this->category_repo->upload_directory
+                );
+            }
+            $this->category_repo->update($id, $data);
             DB::commit();
             return redirect()->route('categories.index')->with('flash', [
                 'message' => 'Category updated successfully.',

@@ -32,7 +32,7 @@ class MainRepository
         return $query->get();
     }
 
-    public function getById(int $id, array $fields)
+    public function getById(int $id, array $fields = ['*'])
     {
         return $this->model->select($fields)->findOrFail($id);
     }

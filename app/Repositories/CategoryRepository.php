@@ -6,6 +6,7 @@ use App\Models\Category;
 class CategoryRepository extends MainRepository
 {
     protected $model;
+    public $upload_directory = 'dashboard/category';
 
     public function __construct(Category $model)
     {
