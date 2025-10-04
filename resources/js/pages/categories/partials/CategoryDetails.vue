@@ -18,22 +18,22 @@ defineProps<{
         <!-- Category Image Section -->
         <div class="space-y-3">
             <div class="flex justify-center">
-                <div v-if="category.image" class="group relative">
+                <div v-if="category.image" class="group relative overflow-hidden rounded-lg">
                     <img
                         :src="category.image"
-                        class="h-48 w-48 rounded-lg object-cover transition-all duration-300"
+                        class="h-48 w-48 rounded-lg object-cover transition-transform duration-300 group-hover:scale-110"
                         alt="Category image for {{ category.name }}"
                     />
+
                     <div
-                        class="bg-opacity-0 group-hover:bg-opacity-10 absolute inset-0 flex items-center justify-center rounded-lg bg-black transition-all duration-300"
+                        class="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 backdrop-blur-sm transition-opacity duration-300 group-hover:opacity-100"
                     >
-                        <span
-                            class="rounded-md bg-secondary px-2 py-1 text-xs font-medium text-secondary-foreground opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-                        >
+                        <span class="rounded-md bg-secondary px-2 py-1 text-xs font-medium text-secondary-foreground">
                             {{ category.name }}
                         </span>
                     </div>
                 </div>
+
                 <div v-else class="flex h-48 w-48 flex-col items-center justify-center rounded-lg border border-dashed border-gray-300">
                     <ImageIcon class="mb-2 h-12 w-12 text-gray-400" />
                     <p class="text-sm text-gray-500">No image available</p>

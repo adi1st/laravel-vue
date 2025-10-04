@@ -18,7 +18,7 @@ const isUpdateMode = !!props.category;
 const form = useForm({
     name: props.category?.name || '',
     description: props.category?.description || '',
-    image: props.category?.image || '',
+    image: null as File | null,
 });
 
 const title = isUpdateMode ? 'Update Category' : 'Create New Category';
@@ -26,12 +26,34 @@ const title = isUpdateMode ? 'Update Category' : 'Create New Category';
 function submit() {
     const options = {
         onSuccess: () => modalStore.close(),
+        forceFormData: true,
     };
 
     if (isUpdateMode) {
-        form.put(route('categories.update', props.category!.id), options);
+        form.transform((data) => {
+            const formData = new FormData();
+            formData.append('name', data.name);
+            formData.append('description', data.description);
+            formData.append('_method', 'PUT');
+
+            if (data.image) {
+                formData.append('image', data.image);
+            }
+
+            return formData;
+        }).post(route('categories.update', props.category!.id), options);
     } else {
-        form.post(route('categories.store'), options);
+        form.transform((data) => {
+            const formData = new FormData();
+            formData.append('name', data.name);
+            formData.append('description', data.description);
+
+            if (data.image) {
+                formData.append('image', data.image);
+            }
+
+            return formData;
+        }).post(route('categories.store'), options);
     }
 }
 </script>
@@ -59,7 +81,13 @@ function submit() {
             </div>
             <div class="grid grid-cols-4 items-center gap-4">
                 <Label for="image" class="text-right">Image</Label>
-                <Input id="image" type="file" accept="image/*" class="col-span-3" />
+                <Input
+                    id="image"
+                    type="file"
+                    accept="image/*"
+                    class="col-span-3"
+                    @change="(e: Event) => (form.image = (e.target as HTMLInputElement).files?.[0] || null)"
+                />
                 <div v-if="form.errors.image" class="col-span-3 col-start-2 text-sm text-red-600">
                     {{ form.errors.image }}
                 </div>

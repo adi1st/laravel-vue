@@ -5,6 +5,7 @@ use App\Helper\Helper;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Dashboard\Category\CategoryStoreRequest;
 use App\Http\Requests\Dashboard\Category\CategoryUpdateRequest;
+use App\Http\Resources\CategoryResource;
 use App\Models\Category;
 use App\Repositories\CategoryRepository;
 use Illuminate\Http\Request;
@@ -26,7 +27,10 @@ class CategoryController extends Controller
     {
         $filters    = $request->all();
         $categories = $this->category_repo->getAll($filters);
-        return Inertia::render('categories/Index', compact('categories', 'filters'));
+        return Inertia::render('categories/Index', [
+            'categories' => CategoryResource::collection($categories),
+            'filters'    => $filters,
+        ]);
     }
 
     /**
@@ -91,7 +95,6 @@ class CategoryController extends Controller
     public function update(CategoryUpdateRequest $request, $id)
     {
         $data = $request->validated();
-        dd($data);
 
         DB::beginTransaction();
         try {

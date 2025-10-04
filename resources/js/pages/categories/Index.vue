@@ -60,7 +60,7 @@ const { openDeleteModal, openCreateModal, openUpdateModal, openViewModal } = use
                     <TableHeader>
                         <TableRow>
                             <TableHead class="w-[100px]">ID</TableHead>
-                            <TableHead class="w-[100px]"> Image </TableHead>
+                            <!-- <TableHead class="w-[100px]"> Image </TableHead> -->
                             <TableHead>Name</TableHead>
                             <TableHead>Description</TableHead>
                             <TableHead class="text-right">Action</TableHead>
@@ -69,7 +69,7 @@ const { openDeleteModal, openCreateModal, openUpdateModal, openViewModal } = use
                     <TableBody>
                         <TableRow v-for="category in categories.data" :key="category.id">
                             <TableCell class="font-medium">{{ category.id }}</TableCell>
-                            <TableCell> <img :src="category.image" alt="category image" class="w-[100px]" /> </TableCell>
+                            <!-- <TableCell> <img :src="category.image" alt="category image" class="w-[100px]" /> </TableCell> -->
                             <TableCell class="font-medium">{{ category.name }}</TableCell>
                             <TableCell>{{ category.description ?? '' }}</TableCell>
                             <TableCell class="text-right">

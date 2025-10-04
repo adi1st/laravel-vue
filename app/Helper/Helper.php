@@ -7,18 +7,17 @@ use Illuminate\Support\Str;
 class Helper
 {
     // File Management
-    public static function upload_file($file, $path)
+    public static function upload_file($file, $dir)
     {
         if (! $file instanceof \Illuminate\Http\UploadedFile) {
-            throw new \Exception('File is not instance of UploadedFile');
+            throw new \InvalidArgumentException('File harus berupa instance dari UploadedFile.');
         }
-
-        $name = $file->getClientOriginalName();
-        if (preg_match('/\.php$/i', $name) || preg_match('/[<>:"\/|?*\x00-\x1F]/', $name)) {
-            throw new \Exception('Name of file is invalid');
+        $originalName = $file->getClientOriginalName();
+        if (preg_match('/\.php$/i', $originalName) || preg_match('/[<>:"\/|?*\x00-\x1F]/', $originalName)) {
+            throw new \Exception('Nama file atau ekstensi mengandung karakter yang tidak didukung');
         }
         $safeName = time() . '_' . Str::uuid() . '.' . $file->getClientOriginalExtension();
-        $path     = $file->storeAs($path, $safeName);
+        $path     = $file->storeAs($dir, $safeName);
         return $path;
     }
     public static function url_file($path)
